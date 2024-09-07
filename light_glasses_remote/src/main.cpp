@@ -18,12 +18,8 @@ const int resetButtonPin = 2;
 const int resetButtonGndPin = 5;
 ButtonDebounce resetButtonState;
 
-int effectState = 6;
+int effectState = 1;
 int effectStatePrevious = effectState;
-
-int effectCount = 0;
-
-
 
 void updateButtons();
 void logButtons();
@@ -47,14 +43,9 @@ void loop() {
   updateButtons();
   logButtons();
 
-  for (int i = buttonsCount - 1; i > 0; i--) {
-    if (buttonStates[i].isBtnPressed) {
-      effectStatePrevious = effectState;
-      effectState = i;
-      break;
-    }
-  }
   if (resetButtonState.isBtnPressed || buttonStates[0].isBtnPressed) {
+    strip.clear();
+    strip.show();
     effectStatePrevious = effectState;
     effectState = 0;
   }
@@ -63,43 +54,35 @@ void loop() {
     // nothing
   }
 
-  if (effectState == 0) {
-    strip.clear();
-    strip.show();
-    effectState = -1;
+  if (buttonStates[1].isBtnPressed) {
+    effectFlash();
+  }
+
+  if (buttonStates[2].isBtnPressed) {
+    effectStripWhite();
+  }
+
+  if (buttonStates[3].isBtnPressed) {
+    effectStripWhiteDouble();
+  }
+
+  if (buttonStates[4].isBtnPressed) {
+    effectFlashColor();
+  }
+
+  if (buttonStates[5].isBtnPressed) {
+    effectStripColor();
+  }
+
+  // if (buttonStates[5].isBtnPressed) {
+  //   effectStripColorDouble();
+  // }
+
+  if (buttonStates[6].isBtnPressed) {
+    effectState = 1;
   }
 
   if (effectState == 1) {
-    effectFlash();
-    effectState = effectStatePrevious;
-  }
-
-  if (effectState == 2) {
-    effectStripWhite();
-    effectState = effectStatePrevious;
-  }
-
-  if (effectState == 3) {
-    effectStripWhiteDouble();
-    effectState = effectStatePrevious;
-  }
-
-  if (effectState == 4) {
-    effectFlashColor();
-    effectState = effectStatePrevious;
-  }
-
-  if (effectState == 5) {
-    effectStripColor();
-    effectState = effectStatePrevious;
-  }
-
-  // if (effectState == 5) {
-  //   effectStripColorDouble();
-  //   effectState = effectStatePrevious;
-  // }
-
-  if (effectState == 6) {
     effectPlasma();
   }
 
