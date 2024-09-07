@@ -8,7 +8,7 @@
 const int ledPin = 6;
 const int ledCount = 29;
 
-Adafruit_NeoPixel strip(ledPin, ledPin, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel strip(ledCount, ledPin, NEO_GRBW + NEO_KHZ800);
 
 const int buttonsCount = 7;
 const int buttonPins[buttonsCount] = {10, 16, 14, 15, A0, A1, A2};
