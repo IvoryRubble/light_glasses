@@ -20,14 +20,16 @@ ButtonDebounce resetButtonState;
 int effectState = 6;
 int effectStatePrevious = effectState;
 
+int effectCount = 0;
+
 uint16_t hueState = 0;
 uint16_t hueCurrentStep = UINT16_MAX / (3 * LED_COUNT);
 uint16_t hueStateStep = UINT16_MAX / 3;
 
-const uint32_t period0 = 2000;
-const uint32_t period1 = 7000 * 3;
-const uint32_t period2 = 10000 * 3;
-const uint32_t period3 = 3000 * 3;
+const uint32_t period0 = 2300 * 2;
+const uint32_t period1 = 7100 * 2;
+const uint32_t period2 = (uint32_t)11000 * 6;
+const uint32_t period3 = 3100 * 5;
 const int brightness0 = 255;
 const int brightness1 = 255;
 const int brightness2 = 255;
@@ -77,12 +79,22 @@ void loop() {
   }
 
   if (effectState == 1) {
-    strip.fill(strip.Color(255, 255, 255, 255));
-    strip.show();
-    delay(200);
     strip.clear();
     strip.show();
-    delay(200);
+    for (int i = LED_COUNT - 1; i >= 0; i--) {
+      strip.setPixelColor(i, strip.Color(255, 255, 255, 255));
+      strip.show();
+      delay(3);
+    }
+    delay(330);
+    for (int i = LED_COUNT - 1; i >= 0; i--) {
+      strip.setPixelColor(i, strip.ColorHSV(0, 0, 0));
+      strip.show();
+      delay(3);
+    }
+    strip.clear();
+    strip.show();
+    delay(100);
     effectState = effectStatePrevious;
   }
 
@@ -206,15 +218,15 @@ void loop() {
 
     strip.clear();
     for (int i = 0; i < LED_COUNT; i++) {
-      float pixelI0 = periodicFuncPow2(t0 + 1.6 * (float)(i * 2) / LED_COUNT);
+      float pixelI0 = periodicFuncPow5(t0 + 1.7 * (float)(i * 2) / LED_COUNT);
       float pixelIInt0 = mapf(pixelI0, 0, 1, 0, brightness0); 
-      float pixelI1 = periodicFuncPow2(t1 - 4 * (float)(i * 2) / LED_COUNT);
+      float pixelI1 = periodicFuncPow6(t1 - 2.9 * (float)(i * 2) / LED_COUNT);
       float pixelIInt1 = mapf(pixelI1, 0, 1, 0, brightness1);
       float pixelI2 = periodicFuncPow1(t2) * 4 / 6 + periodicFuncPow1(t3 + 3 * (float)(i * 2) / LED_COUNT) * 2 / 6;
       float pixelIInt2 = mapf(pixelI2, 0, 1, 0, UINT16_MAX);
-      int val = (int)((pixelIInt0 + pixelIInt1) / 2);
-      int hue = (int)pixelIInt2;
-      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(hue, 255, val)));
+      int val = (int)(mapf(pixelIInt0 + pixelIInt1, 0, brightness0 + brightness1, 0, 255));
+      uint16_t hue = (uint16_t)pixelIInt2;
+      strip.setPixelColor(i, strip.ColorHSV(hue, 255, val));
     }
     strip.show();
   }
