@@ -1,6 +1,3 @@
-#define LED_PIN 6
-#define LED_COUNT 29
-
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include "mapf.h"
@@ -8,7 +5,10 @@
 #include "buttonDebounce.h"
 #include "effects.h"
 
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
+const int ledPin = 6;
+const int ledCount = 29;
+
+Adafruit_NeoPixel strip(ledPin, ledPin, NEO_GRBW + NEO_KHZ800);
 
 const int buttonsCount = 7;
 const int buttonPins[buttonsCount] = {10, 16, 14, 15, A0, A1, A2};

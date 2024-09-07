@@ -4,10 +4,8 @@
 #include "mapf.h"
 #include "mathFuncs.h"
 
-#ifndef LED_COUNT
-#define LED_COUNT 0
-#endif
-
+extern const int ledPin;
+extern const int ledCount;
 extern Adafruit_NeoPixel strip;
 
 const uint32_t period0 = 2300 * 2;
@@ -19,7 +17,7 @@ const int brightness1 = 255;
 const int brightness2 = 255;
 
 uint16_t hueState = 0;
-uint16_t hueCurrentStep = UINT16_MAX / (3 * LED_COUNT);
+uint16_t hueCurrentStep = UINT16_MAX / (3 * ledCount);
 uint16_t hueStateStep = UINT16_MAX / 3;
 
 void effectPlasma() {
@@ -34,12 +32,12 @@ void effectPlasma() {
     float t3 = mapf(currentTime3, 0, period3, 1000, 1002);
 
     strip.clear();
-    for (int i = 0; i < LED_COUNT; i++) {
-      float pixelI0 = periodicFuncPow5(t0 + 1.7 * (float)(i * 2) / LED_COUNT);
+    for (int i = 0; i < ledCount; i++) {
+      float pixelI0 = periodicFuncPow5(t0 + 1.7 * (float)(i * 2) / ledCount);
       float pixelIInt0 = mapf(pixelI0, 0, 1, 0, brightness0); 
-      float pixelI1 = periodicFuncPow6(t1 - 2.9 * (float)(i * 2) / LED_COUNT);
+      float pixelI1 = periodicFuncPow6(t1 - 2.9 * (float)(i * 2) / ledCount);
       float pixelIInt1 = mapf(pixelI1, 0, 1, 0, brightness1);
-      float pixelI2 = periodicFuncPow1(t2) * 4 / 6 + periodicFuncPow1(t3 + 3 * (float)(i * 2) / LED_COUNT) * 2 / 6;
+      float pixelI2 = periodicFuncPow1(t2) * 4 / 6 + periodicFuncPow1(t3 + 3 * (float)(i * 2) / ledCount) * 2 / 6;
       float pixelIInt2 = mapf(pixelI2, 0, 1, 0, UINT16_MAX);
       int val = (int)(mapf(pixelIInt0 + pixelIInt1, 0, brightness0 + brightness1, 0, 255));
       uint16_t hue = (uint16_t)pixelIInt2;
@@ -51,13 +49,13 @@ void effectPlasma() {
 void effectFlash() {
      strip.clear();
     strip.show();
-    for (int i = LED_COUNT - 1; i >= 0; i--) {
+    for (int i = ledCount - 1; i >= 0; i--) {
       strip.setPixelColor(i, strip.Color(255, 255, 255, 255));
       strip.show();
       delay(3);
     }
     delay(330);
-    for (int i = LED_COUNT - 1; i >= 0; i--) {
+    for (int i = ledCount - 1; i >= 0; i--) {
       strip.setPixelColor(i, strip.ColorHSV(0, 0, 0));
       strip.show();
       delay(3);
@@ -69,10 +67,10 @@ void effectFlash() {
 
 void effectStripWhite() {
     int patternWidth = 4;
-    for (int i = LED_COUNT + patternWidth - 1; i >= 0; i--) {
+    for (int i = ledCount + patternWidth - 1; i >= 0; i--) {
       strip.clear();
       for (int j = 0; j < patternWidth; j++) {
-        if (i - j < LED_COUNT && i - j >= 0) {
+        if (i - j < ledCount && i - j >= 0) {
           strip.setPixelColor(i - j, strip.Color(255, 255, 255, 255));
         }
       }
@@ -87,15 +85,15 @@ void effectStripWhite() {
 void effectStripWhiteDouble() {
     int patternWidth = 3;
     int centerOffset = -3;
-    for (int i = LED_COUNT + patternWidth - 1; i >= LED_COUNT / 2; i--) {
+    for (int i = ledCount + patternWidth - 1; i >= ledCount / 2; i--) {
       strip.clear();
       for (int j = 0; j < patternWidth; j++) {
         int currentPix = i - j + centerOffset; 
-        if (currentPix < LED_COUNT && currentPix >= LED_COUNT / 2 + centerOffset) {
+        if (currentPix < ledCount && currentPix >= ledCount / 2 + centerOffset) {
           strip.setPixelColor(currentPix, strip.Color(255, 255, 255, 255));
         }
-        int currentPixMirrored = LED_COUNT - 1 - (i - j) + centerOffset;
-        if (currentPixMirrored < LED_COUNT / 2 + centerOffset && currentPixMirrored >= 0) {
+        int currentPixMirrored = ledCount - 1 - (i - j) + centerOffset;
+        if (currentPixMirrored < ledCount / 2 + centerOffset && currentPixMirrored >= 0) {
           strip.setPixelColor(currentPixMirrored, strip.Color(255, 255, 255, 255));
         }
       }
@@ -110,13 +108,13 @@ void effectStripWhiteDouble() {
 void effectFlashColor() {
     strip.clear();
     strip.show();
-    for (int i = LED_COUNT - 1; i >= 0; i--) {
+    for (int i = ledCount - 1; i >= 0; i--) {
       strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(hueState + hueCurrentStep * i, 255, 255)));
       strip.show();
       delay(10);
     }
     delay(100);
-    for (int i = LED_COUNT - 1; i >= 0; i--) {
+    for (int i = ledCount - 1; i >= 0; i--) {
       strip.setPixelColor(i, strip.ColorHSV(0, 0, 0));
       strip.show();
       delay(10);
@@ -129,10 +127,10 @@ void effectFlashColor() {
 
 void effectStripColor() {
     int patternWidth = 4;
-    for (int i = LED_COUNT + patternWidth - 1; i >= 0; i--) {
+    for (int i = ledCount + patternWidth - 1; i >= 0; i--) {
       strip.clear();
       for (int j = 0; j < patternWidth; j++) {
-        if (i - j < LED_COUNT && i - j >= 0) {
+        if (i - j < ledCount && i - j >= 0) {
           strip.setPixelColor(i - j, strip.gamma32(strip.ColorHSV(hueState + hueCurrentStep * i, 255, 255)));
         }
       }
@@ -148,15 +146,15 @@ void effectStripColor() {
 void effectStripColorDouble() {
     int patternWidth = 3;
     int centerOffset = -3;
-    for (int i = LED_COUNT + patternWidth - 1; i >= LED_COUNT / 2; i--) {
+    for (int i = ledCount + patternWidth - 1; i >= ledCount / 2; i--) {
       strip.clear();
       for (int j = 0; j < patternWidth; j++) {
         int currentPix = i - j + centerOffset; 
-        if (currentPix < LED_COUNT && currentPix >= LED_COUNT / 2 + centerOffset) {
+        if (currentPix < ledCount && currentPix >= ledCount / 2 + centerOffset) {
           strip.setPixelColor(currentPix, strip.gamma32(strip.ColorHSV(hueState + hueCurrentStep * i, 255, 255)));
         }
-        int currentPixMirrored = LED_COUNT - 1 - (i - j) + centerOffset;
-        if (currentPixMirrored < LED_COUNT / 2 + centerOffset && currentPixMirrored >= 0) {
+        int currentPixMirrored = ledCount - 1 - (i - j) + centerOffset;
+        if (currentPixMirrored < ledCount / 2 + centerOffset && currentPixMirrored >= 0) {
           strip.setPixelColor(currentPixMirrored, strip.gamma32(strip.ColorHSV(hueState + hueCurrentStep * i, 255, 255)));
         }
       }
