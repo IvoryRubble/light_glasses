@@ -21,10 +21,12 @@ ButtonDebounce resetButtonState;
 
 struct StorageData {
   bool isEffectEnabled;
+  bool isTimedEffectEnabled;
   int effectState;
+  int timedEffectState;
   int hash;
   int calcHash() {
-    return (int)(isEffectEnabled * 10) + (int)(effectState) + 12;
+    return (int)isEffectEnabled + (int)isTimedEffectEnabled + (int)(effectState * 100) + (int)(timedEffectState * 10) + 12;
   }
   void updateHash() {
     hash = calcHash();
@@ -37,11 +39,13 @@ struct StorageData storageData;
 const int storageDataAddress = 49;
 
 bool isEffectEnabled = true;
+bool isTimedEffectEnabled = true;
 int effectState = 0;
+int timedEffectState = 0;
 
-const uint32_t effectPeriod = 10000;
-uint32_t effectStartTime = 0;
-uint32_t effectLastTime = 0;
+const uint32_t timedEffectPeriod = 30000;
+uint32_t timedEffectStartTime = 0;
+uint32_t timedEffectLastTime = 0;
 
 void updateButtons();
 void logButtons();
@@ -73,7 +77,8 @@ void loop() {
   if (buttonStates[0].isBtnPressed || resetButtonState.isBtnReleasedLongPress) {
     strip.clear();
     strip.show();
-    isEffectEnabled = !isEffectEnabled;
+    isEffectEnabled = false;
+    isTimedEffectEnabled = false;
     putStorageData();
   }
   
@@ -93,22 +98,29 @@ void loop() {
     effectFlashColor();
   }
 
-  if (buttonStates[5].isBtnPressed) {
-    effectStripColor();
-  }
+  // if (buttonStates[5].isBtnPressed) {
+  //   effectStripColor();
+  // }
 
   // if (buttonStates[5].isBtnPressed) {
   //   effectStripColorDouble();
   // }
 
+  if (buttonStates[5].isBtnPressed) {
+    if (isTimedEffectEnabled) {
+      timedEffectState = (timedEffectState + 1) % 6;
+    } else {
+      isTimedEffectEnabled = true;
+    }
+    timedEffectLastTime = currentTime - timedEffectPeriod;
+    putStorageData();
+  }
+
   if (buttonStates[6].isBtnPressed || (resetButtonState.isBtnReleased && !resetButtonState.isBtnReleasedLongPress)) {
     if (isEffectEnabled) {
-      effectState = (effectState + 1) % 3;
+      effectState = (effectState + 1) % 2;
     } else {
       isEffectEnabled = true;
-    }
-    if (effectState >= 2) {
-      effectLastTime = currentTime - effectPeriod;
     }
     putStorageData();
   }
@@ -119,15 +131,30 @@ void loop() {
     }
     if (effectState == 1) {
       effectRainbow();
-    }
+    } 
+  }
 
-    if (effectState >= 2) {
-      if (currentTime - effectLastTime >= effectPeriod) {
-        if (effectState == 2) {
-          effectStripWhite();
-        }
-        effectLastTime = millis();
+  if (isTimedEffectEnabled) {
+    if (currentTime - timedEffectLastTime >= timedEffectPeriod) {
+      if (timedEffectState == 0) {
+        effectFlash();
       }
+      if (timedEffectState == 1) {
+        effectStripWhite();
+      }
+      if (timedEffectState == 2) {
+        effectStripWhiteDouble();
+      }
+      if (timedEffectState == 3) {
+        effectStripColor();
+      }
+      if (timedEffectState == 4) {
+        effectStripColorDouble();
+      }
+      if (timedEffectState == 5) {
+        effectFlashColor();
+      }
+      timedEffectLastTime = millis();
     }
   }
 
@@ -156,7 +183,9 @@ void logButtons() {
 
 void putStorageData() {
   storageData.effectState = effectState;
+  storageData.timedEffectState = timedEffectState;
   storageData.isEffectEnabled = isEffectEnabled;
+  storageData.isTimedEffectEnabled = isTimedEffectEnabled;
   storageData.updateHash();
   EEPROM.put(storageDataAddress, storageData);
 }
@@ -165,6 +194,8 @@ void getStorageData() {
   EEPROM.get(storageDataAddress, storageData);
   if (storageData.checkHash()) {
     effectState = storageData.effectState;
+    timedEffectState = storageData.timedEffectState;
     isEffectEnabled = storageData.isEffectEnabled;
+    isTimedEffectEnabled = storageData.isTimedEffectEnabled;
   }
 }
