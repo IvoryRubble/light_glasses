@@ -20,6 +20,11 @@ uint16_t hueState = 0;
 uint16_t hueCurrentStep = UINT16_MAX / (3 * ledCount);
 uint16_t hueStateStep = UINT16_MAX / 3;
 
+void effectSingleColor(uint32_t color) {
+  strip.fill(color);
+  strip.show();
+}
+
 void effectPlasma() {
     uint32_t currentTime0 = millis() % period0;
     uint32_t currentTime1 = millis() % period1;
@@ -46,10 +51,33 @@ void effectPlasma() {
     strip.show();
 }
 
+const uint32_t period6 = 20000;
+const uint32_t period7 = 6000;
+
+void effectRainbow() {
+    uint32_t currentTime6 = millis() % period6;
+    uint32_t currentTime7 = millis() % period7;
+
+    float t6 = mapf(currentTime6, 0, period6, 1000, 1002);
+    float t7 = mapf(currentTime7, 0, period7, 1000, 1002);
+
+    strip.clear();
+    for (int i = 0; i < ledCount; i++) {
+      float hueF = periodicFuncHSV(t6 + (float)(i * 2) / (ledCount * 3));
+      float valF = periodicFuncPow1(t7);
+      float satF = periodicFuncPow1(t7);
+      uint16_t hue = (uint16_t)(mapf(hueF, 0, 1, 0, UINT16_MAX));
+      uint8_t val = (uint16_t)(mapf(valF, 0, 1, 150, 255));
+      uint8_t sat = (uint16_t)(mapf(satF, 0, 1, 150, 255));
+      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(hue, sat, val)));
+    }
+    strip.show();
+}
+
 const uint32_t period4 = 240000;
 const uint32_t period5 = 8000;
 
-void effectRainbow() {
+void effectRainbowBreathing() {
     uint32_t currentTime4 = millis() % period4;
     uint32_t currentTime5 = millis() % period5;
 
