@@ -118,7 +118,7 @@ void loop() {
 
   if (buttonStates[6].isBtnPressed || (resetButtonState.isBtnReleased && !resetButtonState.isBtnReleasedLongPress)) {
     if (isEffectEnabled) {
-      effectState = (effectState + 1) % 7;
+      effectState = (effectState + 1) % 6;
     } else {
       isEffectEnabled = true;
     }
@@ -136,16 +136,13 @@ void loop() {
       effectRainbowBreathing();
     }
     if (effectState == 3) {
-      effectSingleColor(strip.Color(0, 0, 0, 255));
-    }  
+      effectSingleColorBreathing((uint16_t)(UINT16_MAX / 3 * 0));
+    } 
     if (effectState == 4) {
-      effectSingleColor(strip.Color(255, 0, 0));
+      effectSingleColorBreathing((uint16_t)(UINT16_MAX / 3 * 1));
     } 
     if (effectState == 5) {
-      effectSingleColor(strip.Color(0, 255, 0));
-    } 
-    if (effectState == 6) {
-      effectSingleColor(strip.Color(0, 0, 255));
+      effectSingleColorBreathing((uint16_t)(UINT16_MAX / 3 * 2));
     } 
   }
 

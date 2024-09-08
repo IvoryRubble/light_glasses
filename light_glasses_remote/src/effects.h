@@ -51,6 +51,25 @@ void effectPlasma() {
     strip.show();
 }
 
+const uint32_t period8 = 6000;
+
+void effectSingleColorBreathing(uint16_t hue) {
+    uint32_t currentTime8 = millis() % period8;
+
+    float t8 = mapf(currentTime8, 0, period8, 1000, 1002);
+
+    strip.clear();
+    for (int i = 0; i < ledCount; i++) {
+      float valF = periodicFuncPow3(t8);
+      float satF = periodicFuncPow1(t8);
+      uint8_t val = (uint16_t)(mapf(valF, 0, 1, 0, 255));
+      uint8_t sat = (uint16_t)(mapf(satF, 0, 1, 255, 255));
+      if (val < 3) val = 3;
+      strip.setPixelColor(i, strip.ColorHSV(hue, sat, val));
+    }
+    strip.show();
+}
+
 const uint32_t period6 = 20000;
 const uint32_t period7 = 6000;
 
