@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
 #include "mapf.h"
 #include "mathFuncs.h"
@@ -18,11 +19,30 @@ const int resetButtonPin = 2;
 const int resetButtonGndPin = 5;
 ButtonDebounce resetButtonState;
 
-int effectState = 1;
-int effectStatePrevious = effectState;
+struct StorageData {
+  bool isEffectEnabled;
+  int effectState;
+  int hash;
+  int calcHash() {
+    return (int)(isEffectEnabled * 10) + (int)(effectState) + 12;
+  }
+  void updateHash() {
+    hash = calcHash();
+  }
+  bool checkHash() {
+    return hash == calcHash();
+  }
+};
+struct StorageData storageData;
+const int storageDataAddress = 49;
+
+bool isEffectEnabled = true;
+int effectState = 0;
 
 void updateButtons();
 void logButtons();
+void putStorageData();
+void getStorageData();
 
 void setup() {
   Serial.begin(115200);
@@ -34,6 +54,8 @@ void setup() {
   pinMode(resetButtonGndPin, OUTPUT);
   digitalWrite(resetButtonGndPin, LOW);
 
+  getStorageData();
+
   strip.begin();
   strip.show();
   strip.setBrightness(255);
@@ -43,17 +65,13 @@ void loop() {
   updateButtons();
   logButtons();
 
-  if (resetButtonState.isBtnPressed || buttonStates[0].isBtnPressed) {
+  if (buttonStates[0].isBtnPressed || resetButtonState.isBtnReleasedLongPress) {
     strip.clear();
     strip.show();
-    effectStatePrevious = effectState;
-    effectState = 0;
+    isEffectEnabled = !isEffectEnabled;
+    putStorageData();
   }
   
-  if (effectState == -1) {
-    // nothing
-  }
-
   if (buttonStates[1].isBtnPressed) {
     effectFlash();
   }
@@ -78,12 +96,22 @@ void loop() {
   //   effectStripColorDouble();
   // }
 
-  if (buttonStates[6].isBtnPressed) {
-    effectState = 1;
+  if (buttonStates[6].isBtnPressed || (resetButtonState.isBtnReleased && !resetButtonState.isBtnReleasedLongPress)) {
+    if (isEffectEnabled) {
+      effectState = (effectState + 1) % 2;
+    } else {
+      isEffectEnabled = true;
+    }
+    putStorageData();
   }
 
-  if (effectState == 1) {
-    effectPlasma();
+  if (isEffectEnabled) {
+    if (effectState == 0) {
+      effectPlasma();
+    }
+    if (effectState == 1) {
+      effectRainbow();
+    }
   }
 
   delay(1);
@@ -106,5 +134,20 @@ void logButtons() {
   }
   if (resetButtonState.isBtnPressed) {
     Serial.println("Reset button pressed");
+  }
+}
+
+void putStorageData() {
+  storageData.effectState = effectState;
+  storageData.isEffectEnabled = isEffectEnabled;
+  storageData.updateHash();
+  EEPROM.put(storageDataAddress, storageData);
+}
+
+void getStorageData() {
+  EEPROM.get(storageDataAddress, storageData);
+  if (storageData.checkHash()) {
+    effectState = storageData.effectState;
+    isEffectEnabled = storageData.isEffectEnabled;
   }
 }

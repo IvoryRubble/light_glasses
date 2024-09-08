@@ -46,8 +46,31 @@ void effectPlasma() {
     strip.show();
 }
 
+const uint32_t period4 = 240000;
+const uint32_t period5 = 8000;
+
+void effectRainbow() {
+    uint32_t currentTime4 = millis() % period4;
+    uint32_t currentTime5 = millis() % period5;
+
+    float t4 = mapf(currentTime4, 0, period4, 1000, 1002);
+    float t5 = mapf(currentTime5, 0, period5, 1000, 1002);
+
+    strip.clear();
+    for (int i = 0; i < ledCount; i++) {
+      float hueF = periodicFuncHSV(t4 + (float)(i * 2) / (ledCount * 3));
+      float valF = periodicFuncPow1(t5);
+      float satF = periodicFuncPow1(t5);
+      uint16_t hue = (uint16_t)(mapf(hueF, 0, 1, 0, UINT16_MAX));
+      uint8_t val = (uint16_t)(mapf(valF, 0, 1, 46, 255));
+      uint8_t sat = (uint16_t)(mapf(satF, 0, 1, 0, 255));
+      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(hue, sat, val)));
+    }
+    strip.show();
+}
+
 void effectFlash() {
-     strip.clear();
+    strip.clear();
     strip.show();
     for (int i = ledCount - 1; i >= 0; i--) {
       strip.setPixelColor(i, strip.Color(255, 255, 255, 255));
