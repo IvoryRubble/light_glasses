@@ -39,6 +39,10 @@ const int storageDataAddress = 49;
 bool isEffectEnabled = true;
 int effectState = 0;
 
+const uint32_t effectPeriod = 10000;
+uint32_t effectStartTime = 0;
+uint32_t effectLastTime = 0;
+
 void updateButtons();
 void logButtons();
 void putStorageData();
@@ -64,6 +68,7 @@ void setup() {
 void loop() {
   updateButtons();
   logButtons();
+  uint32_t currentTime = millis();
 
   if (buttonStates[0].isBtnPressed || resetButtonState.isBtnReleasedLongPress) {
     strip.clear();
@@ -98,9 +103,12 @@ void loop() {
 
   if (buttonStates[6].isBtnPressed || (resetButtonState.isBtnReleased && !resetButtonState.isBtnReleasedLongPress)) {
     if (isEffectEnabled) {
-      effectState = (effectState + 1) % 2;
+      effectState = (effectState + 1) % 3;
     } else {
       isEffectEnabled = true;
+    }
+    if (effectState >= 2) {
+      effectLastTime = currentTime - effectPeriod;
     }
     putStorageData();
   }
@@ -111,6 +119,15 @@ void loop() {
     }
     if (effectState == 1) {
       effectRainbow();
+    }
+
+    if (effectState >= 2) {
+      if (currentTime - effectLastTime >= effectPeriod) {
+        if (effectState == 2) {
+          effectStripWhite();
+        }
+        effectLastTime = millis();
+      }
     }
   }
 
